@@ -7,94 +7,56 @@ Cardiovascular disease (CVD) remains a leading cause of mortality worldwide. Acc
 
 ## Methodology
 
-### 1. Data Loading and Preprocessing
+### 1. Data Loading & Preprocessing
 
-#### Dataset Overview
-- **Source**: `cardio_train.csv`, containing anonymized patient health records
-- **Target Variable**: `cardio` (1 = CVD present, 0 = CVD absent)
-
-#### Transformations
-- Removed `id` column
-- Converted `age` from days to years
-- Engineered new features:
-  - Body Mass Index (BMI)
-  - Pulse Pressure (PP)
-
-#### Data Cleaning
-- Removed records with:
-  - BMI < 10 or > 50
-  - Systolic BP > 300 mmHg
-  - Diastolic BP > Systolic BP
-  - Clinically unrealistic values
-
-#### Outlier and Anomaly Handling
-- Removed records such as:
-  - CVD-negative with cholesterol level = 3
-  - CVD-positive with normal cholesterol, glucose, and healthy BMI
-  - CVD-negative with glucose level = 3
-
-#### Correlation Analysis
-- Used Pearson correlation heatmap to:
-  - Validate engineered features (BMI and PP)
-  - Guide feature selection
-
-#### Class Imbalance Handling
-- Applied **SMOTE (Synthetic Minority Over-sampling Technique)** to balance dataset
-
-#### Data Splitting
-- Used `train_test_split` with an **80:20** ratio
-- Ensured generalization and evaluation on unseen data
-
----
+- **Dataset**: `cardio_train.csv` with `cardio` as target (1 = CVD, 0 = No CVD)
+- **Transformations**:
+  - Removed `id`, converted `age` to years
+  - Created BMI and Pulse Pressure features
+- **Cleaning**:
+  - Dropped unrealistic BMI (<10 or >50), systolic >300, diastolic > systolic
+  - Removed anomalies (e.g., CVD- with cholesterol=3)
+- **Correlation Analysis**:
+  - Used Pearson heatmap to validate BMI, PP
+- **Balancing**:
+  - Applied SMOTE to address class imbalance
+- **Splitting**:
+  - 80:20 train-test split using `train_test_split`
 
 ### 2. Model Architecture
 
-#### XGBoost Classifier
-- Boosting-based model that builds trees sequentially
-- Handles regularization and is robust to noise
-- Optimized with log loss
-
-#### Random Forest Classifier
-- Bagging-based ensemble using parallel decision trees
-- Reduces variance through averaging
-- Offers feature importance for model interpretability
-
-> Both models use `n_estimators = 50` for optimal performance vs efficiency
-
----
+- **XGBoost**: Sequential boosting, robust with regularization  
+- **Random Forest**: Parallel trees via bagging, reduces variance  
+- Both models used `n_estimators = 50`
 
 ### 3. Ensemble Strategy
 
-#### Soft Voting Ensemble
-- Combines predictions of XGBoost and Random Forest
-- Averages predicted probabilities for better calibration
-- Captures both low-bias (RF) and low-variance (XGBoost) strengths
+- **Soft Voting**: Combined probabilities from both models  
+- Benefits: Improved calibration, blends low-bias & low-variance models
 
----
+### 4. Training & Evaluation
 
-### 4. Model Training and Evaluation
-
-#### Training Phase
-- Performed on SMOTE-balanced 80% training data
-- Used features like `age`, `ap_hi`, `ap_lo`, `cholesterol`, `BMI`, and `pulse pressure`
-
-#### Testing Phase
-- Predictions made on 20% hold-out test set
-- Compared against true labels
-
-#### Evaluation Metrics
-- Accuracy
-- Precision
-- Recall (Sensitivity)
-- F1-Score
-- ROC-AUC
-- Visuals: Confusion matrix, ROC curve
-
----
+- Trained on SMOTE-balanced data using selected features  
+- Tested on hold-out set  
+- **Metrics**: Accuracy, Precision, Recall, F1-Score, ROC-AUC  
+- **Visuals**: Confusion matrix, ROC curve
 
 ### 5. Cross-Validation
-- Used **5-fold cross-validation** to validate generalization
-- Measured consistent performance across multiple data splits
+
+- **5-Fold CV** for reliable generalization across multiple data splits
+
+---
+
+## Research & Comparison
+
+Our proposed hybrid ensemble model was compared with baseline models such as Logistic Regression, Random Forest, and XGBoost. The hybrid model consistently outperformed individual models across all metrics.
+
+**Results**  
+Accuracy: 0.8141  
+Precision: 0.8155  
+Recall: 0.8113  
+F1-Score: 0.8134  
+AUC-ROC: 0.9020
 
 ---
 
