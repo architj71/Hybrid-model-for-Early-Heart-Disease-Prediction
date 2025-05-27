@@ -1,70 +1,106 @@
-# Hybrid Model for Early Heart Disease Prediction
+# Hybrid Ensemble Model for Early Heart Disease Prediction
 
 ## Problem Statement
-Heart disease remains a leading cause of mortality, necessitating accurate and early detection. Existing models face challenges such as overfitting, poor interpretability, and handling complex data. This project aims to develop a hybrid model that leverages a Transformer-based approach for feature extraction and XGBoost for classification, with a stacking ensemble to enhance prediction accuracy and robustness.
+Cardiovascular disease (CVD) remains a leading cause of mortality worldwide. Accurate and early detection of CVD is critical for timely intervention and treatment. Traditional predictive models often struggle with issues such as overfitting, low interpretability, and poor generalization on complex, imbalanced datasets. This project aims to address these challenges through a hybrid ensemble model combining XGBoost and Random Forest classifiers using a soft voting strategy to enhance predictive accuracy and robustness.
 
 ---
 
 ## Methodology
-Our approach integrates deep learning and machine learning techniques to create a robust predictive model. The following steps outline our methodology:
 
-### Data Preprocessing
+### 1. Data Loading and Preprocessing
 
-1. Load Dataset – Load `cardio_train.csv` containing cardiovascular health records.  
-2. Convert Target Variable to Binary – Encode the target variable:  
-   - `0`: No heart disease (HD)  
-   - `1`: Presence of heart disease (HD)  
-3. Handle Missing Values – Use KNN Imputer to fill missing values.  
-4. Balance Data – Apply Synthetic Minority Over-sampling Technique (SMOTE) to address class imbalance.  
-5. Normalize Features – Use RobustScaler to normalize feature distributions.  
-6. Feature Selection – Compute feature importance using:  
-   - Extra Trees Importance  
-   - Mutual Information  
-   - Select the Top 10 features.  
+#### Dataset Overview
+- **Source**: `cardio_train.csv`, containing anonymized patient health records
+- **Target Variable**: `cardio` (1 = CVD present, 0 = CVD absent)
 
-### Model Training
+#### Transformations
+- Removed `id` column
+- Converted `age` from days to years
+- Engineered new features:
+  - Body Mass Index (BMI)
+  - Pulse Pressure (PP)
 
-7. Split Data – Allocate 80% for training and 20% for testing.  
-8. Train Transformer Model:  
-   - Linear Embedding → Transformer Encoder → Fully Connected Layer → Probability Scores  
-9. Train XGBoost Model:  
-   - Gradient Boosting → Log Loss Optimization → Probability Scores  
+#### Data Cleaning
+- Removed records with:
+  - BMI < 10 or > 50
+  - Systolic BP > 300 mmHg
+  - Diastolic BP > Systolic BP
+  - Clinically unrealistic values
 
-### Model Stacking & Evaluation
+#### Outlier and Anomaly Handling
+- Removed records such as:
+  - CVD-negative with cholesterol level = 3
+  - CVD-positive with normal cholesterol, glucose, and healthy BMI
+  - CVD-negative with glucose level = 3
 
-10. Stacking Ensemble:  
-    - Combine Transformer & XGBoost outputs  
-    - Train Logistic Regression as a meta-classifier  
-    - Generate final predictions  
-11. Evaluate Model Performance:  
-    - Accuracy  
-    - Precision  
-    - Recall  
-    - F1-Score  
-    - AUC-ROC Curve  
+#### Correlation Analysis
+- Used Pearson correlation heatmap to:
+  - Validate engineered features (BMI and PP)
+  - Guide feature selection
 
----
+#### Class Imbalance Handling
+- Applied **SMOTE (Synthetic Minority Over-sampling Technique)** to balance dataset
 
-## Research & Comparison
-
-- We have reviewed five research papers to compare our approach with existing methods.  
-- Moving forward, we will compare our model’s performance with a benchmark research paper.  
-- Methodology and pseudo-code refinements are ongoing to enhance accuracy and efficiency.  
+#### Data Splitting
+- Used `train_test_split` with an **80:20** ratio
+- Ensured generalization and evaluation on unseen data
 
 ---
 
-## Future Enhancements
+### 2. Model Architecture
 
-- Experiment with different feature selection techniques.  
-- Fine-tune hyperparameters for Transformer and XGBoost models.  
-- Implement SHAP for explainability.  
-- Optimize computational efficiency for real-time applications.  
+#### XGBoost Classifier
+- Boosting-based model that builds trees sequentially
+- Handles regularization and is robust to noise
+- Optimized with log loss
+
+#### Random Forest Classifier
+- Bagging-based ensemble using parallel decision trees
+- Reduces variance through averaging
+- Offers feature importance for model interpretability
+
+> Both models use `n_estimators = 50` for optimal performance vs efficiency
+
+---
+
+### 3. Ensemble Strategy
+
+#### Soft Voting Ensemble
+- Combines predictions of XGBoost and Random Forest
+- Averages predicted probabilities for better calibration
+- Captures both low-bias (RF) and low-variance (XGBoost) strengths
+
+---
+
+### 4. Model Training and Evaluation
+
+#### Training Phase
+- Performed on SMOTE-balanced 80% training data
+- Used features like `age`, `ap_hi`, `ap_lo`, `cholesterol`, `BMI`, and `pulse pressure`
+
+#### Testing Phase
+- Predictions made on 20% hold-out test set
+- Compared against true labels
+
+#### Evaluation Metrics
+- Accuracy
+- Precision
+- Recall (Sensitivity)
+- F1-Score
+- ROC-AUC
+- Visuals: Confusion matrix, ROC curve
+
+---
+
+### 5. Cross-Validation
+- Used **5-fold cross-validation** to validate generalization
+- Measured consistent performance across multiple data splits
 
 ---
 
 ## Installation & Requirements
 
-To run this project, install the following dependencies:
+Install the required packages using pip:
 
 ```bash
-pip install pandas numpy scikit-learn xgboost transformers imbalanced-learn
+pip install pandas numpy scikit-learn xgboost imbalanced-learn matplotlib seaborn
